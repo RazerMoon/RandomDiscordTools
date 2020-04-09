@@ -20,6 +20,8 @@ A plugin for [Bandaged BetterDiscord (BDB)](https://github.com/rauenzi/BetterDis
 
   * [Manual User Selection](#Manual-User-Selection)
 
+* **[Plugin Settings](#Plugin-Settings)**
+
 > *Note: Even with zoomed in Discord it can be hard to see the README gifs clearly. Go into the [media folder](media) and watch the gifs there for better size and quality.*
 
 ---
@@ -111,5 +113,88 @@ The method can be selected in the plugin settings but is set to [Automatic User 
 ## *Manual User Selection*
 
 ![Manual User](media/manual.gif)
+
+---
+
+## **Plugin Settings**
+
+---
+
+![Plugin Settings](media/settings.gif)
+
+---
+
+## *Selection Switch*
+
+![Selection Switch](media/options/sel_switch.png)
+
+## *This switch is used to decide if you want to use Automatic or Manual Selection.*
+
+* **OFF = Automatic** *(Default)* - Use the ID from the object you click on.
+
+or
+
+* **ON = Manual** - Use the ID in the text or dropdown.
+
+---
+
+## *Server Settings*
+
+![Server Settings](media/options/server.png)
+
+## *This section is used to decide the settings for the server*
+
+* **Server (Textbox)** - A textbox for the ID of the server you want to get information about
+
+* **Server (Dropdown)** - A dropdown for the ID of the server you want to get information about
+
+* **Dropdown or Textbox Server Input (Switch)**
+
+  * **OFF = Automatic** *(Default)* - Use an ID from the dropdown.
+
+  or
+
+  * **ON = Manual** - Use the ID from the textbox.
+
+---
+
+## *Channel Settings*
+
+![Channel Settings](media/options/channel.png)
+
+## *This section is used to decide the settings for the channel*
+
+* **Channel (Textbox)** - A textbox for the ID of the channel you want to get information about
+
+* **channel (Dropdown)** - A dropdown for the ID of the channel you want to get information about
+
+* **Dropdown or Textbox Channel Input (Switch)**
+
+  * **OFF = Automatic** *(Default)* - Use an ID from the dropdown.
+
+  or
+
+  * **ON = Manual** - Use the ID from the textbox.
+
+---
+
+## *User Settings*
+
+![User Settings](media/options/user.png)
+
+## *This section is used to decide the settings for the user*
+
+* **User (Textbox)** - A textbox for the ID of the user you want to get information about
+
+* **User (Dropdown)** - A dropdown for the ID of the user you want to get information about
+
+* **Dropdown or Textbox User Input (Switch)**
+
+  * **OFF = Automatic** *(Default)* - Use an ID from the dropdown.
+
+  or
+
+  * **ON = Manual** - Use the ID from the textbox.
+
 
 ---
