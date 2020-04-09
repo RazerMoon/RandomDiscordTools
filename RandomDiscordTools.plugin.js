@@ -28,23 +28,18 @@
 let RandomDiscordTools = (() => {
     const config = {info:
     {name:"RandomDiscordTools",authors:[{name:"RazerMoon",discord_id:"162970149857656832"}],
-    version:"0.5.0",
+    version:"0.6.0",
     description:"A plugin for Bandaged BetterDiscord that has some random, potentially useful tools."},
     changelog:[
         {
             title: "New Features",
             type: "added",
-            items: ["New Changelog button.",
-                    "New plugin name",
-                    "More settings.",
-                    "Clicking on a plugin header will let you edit it!",
-                    "Manual User Selection."
-                    ]
+            items: ["New info button so you don't have to click on a message header anymore"]
         },
         {
             title: "Improvements",
             type: "improved",
-            items: ["Can choose between manual and automatic id entry."]
+            items: ["The onClick() function now takes target as input instead of e"]
         },
     ]
     };
@@ -175,7 +170,6 @@ let RandomDiscordTools = (() => {
     class DisplayChangelog extends React.Component {
         constructor(props) {
             super(props);
-            console.log(props)
             this.p = props
         }
         render() {
@@ -189,14 +183,106 @@ let RandomDiscordTools = (() => {
                     )]
             )
     }
-}
+    };
+
+    class InfoButton { //Credit to Egrodo for base
+        constructor() {
+            this.btnReference = null;
+            this.tooltipReference = null;
+
+            this.onButtonMouseOut = this.onButtonMouseOut.bind(this);
+            this.onButtonMouseOver = this.onButtonMouseOver.bind(this);
+        }
+
+        destructor() {
+            try {
+                this.btnReference.removeEventListener('mouseenter', this.onButtonMouseOver);
+                this.btnReference.removeEventListener('mouseleave', this.onButtonMouseOut);
+                this.btnReference.parentNode.removeChild(this.btnReference);
+                this.tooltipReference.parentNode.removeChild(this.tooltipReference);
+            }
+            catch(err) {
+                return; //Nothing to destruct
+            }
+        }
+
+        createButton(gear) {
+            if (gear == true) {
+            var button = `<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><g><rect fill="none" id="canvas_background" height="22" width="22" y="-1" x="-1"/></g><g><path stroke="" fill-rule="evenodd" fill="currentColor" d="m10,0.564842c-5.17133,0 -9.370144,4.228447 -9.370144,9.435503s4.198814,9.435158 9.370144,9.435158c5.170987,0 9.370144,-4.228102 9.370144,-9.435503c0,-5.207056 -4.199157,-9.435503 -9.370144,-9.435503l0,0.000345zm0,2.059599c0.454389,0 0.834417,0.160939 1.156533,0.485095c0.322116,0.324363 0.481803,0.712218 0.481803,1.175642c0,0.480678 -0.159687,0.889237 -0.481803,1.207733s-0.702144,0.474467 -1.156533,0.474467c-0.448563,0 -0.834417,-0.161146 -1.156533,-0.485164c-0.322116,-0.324363 -0.492769,-0.728091 -0.492769,-1.197036c0,-0.451692 0.170653,-0.834716 0.492769,-1.1646c0.322116,-0.330229 0.707969,-0.496137 1.156533,-0.496137zm0,4.99277c0.408128,0 0.731957,0.142513 0.985195,0.420636c0.258721,0.272258 0.385511,0.613183 0.385511,1.024158l0,6.869242c0,0.410974 -0.12679,0.75121 -0.385511,1.0352c-0.253238,0.277779 -0.577067,0.420636 -0.985195,0.420636c-0.402645,0 -0.737097,-0.142858 -0.995818,-0.420636c-0.253238,-0.28399 -0.385854,-0.624226 -0.385854,-1.0352l0,-6.869242c0,-0.410974 0.132616,-0.7519 0.385854,-1.024158c0.258721,-0.278124 0.593173,-0.420636 0.995818,-0.420636z" id="path838"/></g></svg>`
+
+            // Use flexMarginReset prop to find the selector for the taskbar row.
+            const selector = (BdApi.findModuleByProps('flexMarginReset', 'flex').flex || '').split(' ')[0];
+            if (!selector) {
+              console.error('Info Button failed to start up: Selector not found?');
+              return;
+            }
+        
+            // Create my custom button and prepend it to the toolbar row.
+            const row = document.querySelector(`.${selector}`);
+            this.btnReference = row.firstElementChild.cloneNode(true);
+            this.btnReference.firstElementChild.innerHTML = button;
+            this.btnReference.firstElementChild.style.pointerEvents = 'none'; // Ignore pointer events to fix bug that was causing repeated clicks to be ignored.
+            this.btnReference.setAttribute('aria-label', 'Print info to console');
+            this.btnReference.id = 'RDTBtn';
+            this.btnReference.addEventListener('mouseenter', this.onButtonMouseOver);
+            this.btnReference.addEventListener('mouseleave', this.onButtonMouseOut);
+
+            row.prepend(this.btnReference);
+
+            this.createTooltip()
+            }
+            else {
+                this.destructor()
+            }
+        }
+
+        createTooltip() {
+            // Also setup my recreated tooltip that uses Discord's classes.
+            const tooltipClasses = BdApi.findModuleByProps('tooltipBottom');
+        
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.style.visibility = 'hidden';
+            wrapperDiv.style.position = 'absolute';
+            wrapperDiv.style.zIndex = '10000';
+            wrapperDiv.style.pointerEvents = 'none';
+            this.tooltipReference = wrapperDiv;
+        
+            const textWrapper = document.createElement('div');
+            textWrapper.className = [tooltipClasses.tooltip, tooltipClasses.tooltipTop, tooltipClasses.tooltipBlack].join(' ');
+            textWrapper.innerText = `Print info to console`;
+        
+            const bottomArrow = document.createElement('div');
+            bottomArrow.className = tooltipClasses.tooltipPointer;
+        
+            textWrapper.prepend(bottomArrow);
+            wrapperDiv.appendChild(textWrapper);
+            document.body.appendChild(wrapperDiv);
+        }
+
+        onButtonMouseOver({target}) {
+
+            const { x, y } = target.getBoundingClientRect();
+            const tooltipXPos = x + target.clientWidth / 2 - this.tooltipReference.offsetWidth / 2;
+            const tooltipYPos = y - target.clientHeight - 8; // 8 being a constant amount of space to hover above the btn.
+        
+            this.tooltipReference.style.left = `${tooltipXPos}px`;
+            this.tooltipReference.style.visibility = 'visible';
+            this.tooltipReference.style.top = `${tooltipYPos}px`;
+        
+            this.tooltipReference.visibility = 'visible';
+        }
+
+        onButtonMouseOut() {
+            this.tooltipReference.style.visibility = 'hidden';
+        }
+
+    }
 
     return class RandomDiscordTools extends Plugin {
         constructor() {
             super();
 
             this.c = {
-                targethasClass : (e, name) => {return e.target.classList.contains(name)},
                 currentChannel : BdApi.findModuleByProps('getChannelId').getChannelId,
                 currentGuildId : BdApi.findModuleByProps('getGuildId').getGuildId,
                 getChannelById : BdApi.findModuleByProps('getChannel').getChannel,
@@ -204,6 +290,7 @@ let RandomDiscordTools = (() => {
                 getUserById    : BdApi.findModuleByProps("getUser").getUser,
                 userId         : BdApi.findModuleByProps('getId').getId(),
                 FL             : new FireLog(),
+                IB             : new InfoButton(),
             }
 
             this.defaultSettings = {
@@ -219,8 +306,11 @@ let RandomDiscordTools = (() => {
             };
         }
 
-        onClick(e) {
-            if (e.target.id == "F_ChangelogButton") {
+        onClick({target}) {
+
+            let FL = this.c.FL;
+
+            if (target.id == "F_ChangelogButton") {
                 Modals.showChangelogModal(`${this._config.info.name} has been updated!`, this.getVersion(), this._config.changelog);
                 //let window = document.querySelectorAll(".root-1gCeng")[0]
                 //let old = document.querySelectorAll(".scrollerWrap-2lJEkd")[7]
@@ -231,8 +321,9 @@ let RandomDiscordTools = (() => {
                 //console.log(document.querySelectorAll(".root-1gCeng"))
             }
 
+
             if (this.settings.gear == true) {
-                if (this.c.targethasClass(e, "header-23xsNx")) {
+                if (target.id == "RDTBtn") {
 
                     if (this.settings.switchserverid == false) {
                         var server = this.c.getServerById(this.settings.dropserverid);
@@ -255,29 +346,29 @@ let RandomDiscordTools = (() => {
                         var user = this.c.getUserById(this.settings.textuserid)
                     }
 
-                    this.c.FL.log(server, channel, user);
+                    FL.log(server, channel, user);
                 }
             }
             else {
-                if (this.c.targethasClass(e, "wrapper-1BJsBx")) {
+                if (target.classList.contains("wrapper-1BJsBx")) {
                     let server = this.c.getServerById(this.c.currentGuildId());
-                    this.c.FL.log(server, 0, 0)
+                    FL.log(server, 0, 0)
                 }
 
-                if (this.c.targethasClass(e, "name-3_Dsmg")) {
+                if (target.classList.contains("name-3_Dsmg")) {
                     let channel = this.c.getChannelById(this.c.currentChannel());
-                    this.c.FL.log(0, channel, 0)
+                    FL.log(0, channel, 0)
                 }
 
-                if (this.c.targethasClass(e, "wrapper-3t9DeA")) {
+                if (target.classList.contains("wrapper-3t9DeA")) {
                    if (e.target.classList.contains("avatar-SmRMf2")) return;
-                   let userid = e.target.attributes.user_by_bdfdb.value
-                   this.c.FL.log(0, 0, this.c.getUserById(userid))
+                   let userid = target.attributes.user_by_bdfdb.value
+                   FL.log(0, 0, this.c.getUserById(userid))
                 }
 
-                if (this.c.targethasClass(e, "bd-addon-header")) {
+                if (target.classList.contains("bd-addon-header")) {
                     const currentDir = BdApi.Plugins.folder;
-                    let addon = e.target.parentNode.__reactInternalInstance$.return.stateNode.props.addon
+                    let addon = target.parentNode.__reactInternalInstance$.return.stateNode.props.addon
                     let fileDir = require("path").resolve(`${currentDir}/${addon.filename}`)
                     console.log("Opening " + addon.filename)
                     require("electron").shell.openItem(fileDir);
@@ -308,16 +399,39 @@ let RandomDiscordTools = (() => {
             
         }
 
+        getCookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+              var c = ca[i];
+              while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+              }
+              if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+              }
+            }
+            return "";
+          }
+
         onStart() {
             document.addEventListener("click", this.listener = e => {this.onClick(e)});
+
+            this.c.IB.createButton(this.settings.gear)
+
+            //console.log(document.cookie)
+
+            //console.log(this.getCookie("names"))
+
+            //document.cookie = "names=Slim Shas; expires=Thu, 20 Dec 2020 12:00:00 UTC; path=/";
+
             //console.log(BdApi.alert)
 
             //this.displayAlert("Hello", "bu")
             //console.log(exec)
 
             //this.run('start "" "c:\\" ')
-
-
 
             //console.log(DiscordModules.ConfirmationModal)
 
@@ -342,6 +456,8 @@ let RandomDiscordTools = (() => {
 
         onStop() {
             document.removeEventListener("click", this.listener);
+            
+            this.c.IB.destructor();
         }
 
         getSettingsPanel() {
@@ -351,7 +467,7 @@ let RandomDiscordTools = (() => {
                 // Server
             new SettingField("", "", () => {}, DisplayChangelog, {col: col.GREY}),
 
-            new Switch("Automatic or Manual Selection", "OFF = Automatic, ON = Manual", this.settings.gear, (e) => {this.settings.gear = e;}),
+            new Switch("Automatic or Manual Selection", "OFF = Automatic, ON = Manual", this.settings.gear, (e) => {this.settings.gear = e; this.c.IB.createButton(this.settings.gear)}),
             
             new Textbox("Server", "Put in the id of the server you want to get information about.", this.settings.textserverid, (e) => {this.settings.textserverid = e;}),
             new Dropdown("Server", "Select the id of the server you want to get information about.", this.settings.dropserverid, [
