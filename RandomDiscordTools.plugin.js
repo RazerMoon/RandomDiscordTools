@@ -28,18 +28,23 @@
 let RandomDiscordTools = (() => {
     const config = {info:
     {name:"RandomDiscordTools",authors:[{name:"RazerMoon",discord_id:"162970149857656832"}],
-    version:"0.6.0",
+    version:"0.7.0",
     description:"A plugin for Bandaged BetterDiscord that has some random, potentially useful tools."},
     changelog:[
         {
             title: "New Features",
             type: "added",
-            items: ["New info button so you don't have to click on a message header anymore"]
+            items: ["New info button again but better.",
+                    "New InfoButton class.",
+                    ]
         },
         {
             title: "Improvements",
             type: "improved",
-            items: ["The onClick() function now takes target as input instead of e"]
+            items: ["The info button now uses React instead pf DOM manipulation, credit to Strencher for inspiration.",
+                    "The button now appears and reappears when you change the selection setting.",
+                    "The button has it's own class for patching and logging"
+                    ]
         },
     ]
     };
@@ -76,7 +81,7 @@ let RandomDiscordTools = (() => {
         stop() {}
     } : (([Plugin, Api]) => {
         const plugin = (Plugin, Api) => {
-    const {Modals, DiscordModules, Settings, PluginUtilities} = Api;
+    const {Modals, DiscordModules, Settings, WebpackModules, ReactComponents, Patcher, DiscordSelectors, PluginUtilities} = Api;
     const {SettingPanel, SettingField, Textbox, Dropdown, Switch} = Settings;
     const {React} = DiscordModules;
 
@@ -168,9 +173,8 @@ let RandomDiscordTools = (() => {
     };
 
     class DisplayChangelog extends React.Component {
-        constructor(props) {
-            super(props);
-            this.p = props
+        constructor() {
+            super();
         }
         render() {
             return React.createElement(
@@ -178,105 +182,97 @@ let RandomDiscordTools = (() => {
                 {class: "flex-1O1GKY"},
                     [React.createElement(
                         'button',
-                        {type: "button", id: "F_ChangelogButton", class: `button-38aScr iconWrapper-2OrFZ1 da-button lookFilled-1Gx00P ${this.p.col} sizeSmall-2cSMqn grow-q77ONN da-grow`},
+                        {type: "button", id: "F_ChangelogButton", class: `button-38aScr iconWrapper-2OrFZ1 da-button lookFilled-1Gx00P ${this.props.col} sizeSmall-2cSMqn grow-q77ONN da-grow`},
                         "Changelog"
                     )]
             )
     }
     };
 
-    class InfoButton { //Credit to Egrodo for base
+    class InfoIcon extends React.Component {
         constructor() {
-            this.btnReference = null;
-            this.tooltipReference = null;
-
-            this.onButtonMouseOut = this.onButtonMouseOut.bind(this);
-            this.onButtonMouseOver = this.onButtonMouseOver.bind(this);
+            super()
+            this.ToolTip = WebpackModules.getByDisplayName("Tooltip");
+            this.BD = DiscordModules.ButtonData;
+            this.ButtonClasses = `button-14-BFJ da-button enabled-2cQ-u7 da-enabled button-38aScr ${this.BD.ButtonLooks.BLANK} ${this.BD.ButtonColors.BRAND} grow-q77ONN da-grow`
         }
-
-        destructor() {
-            try {
-                this.btnReference.removeEventListener('mouseenter', this.onButtonMouseOver);
-                this.btnReference.removeEventListener('mouseleave', this.onButtonMouseOut);
-                this.btnReference.parentNode.removeChild(this.btnReference);
-                this.tooltipReference.parentNode.removeChild(this.tooltipReference);
-            }
-            catch(err) {
-                return; //Nothing to destruct
-            }
+        render() {
+            return React.createElement(this.ToolTip, {
+                text: "Print info to console",
+                position: "top",
+                color: "black"
+                }, e => React.createElement('button', {
+                    "aria-label": "Info Button",
+                    type: "button",
+                    class: this.ButtonClasses
+                    }, React.createElement('div', {
+                        class: `contents-18-Yxp da-contents`
+                        }, React.createElement("svg", {
+                            width: "20",
+                            height: "17",
+                            viewBox: "0 0 20 20",
+                            onMouseEnter: e.onMouseEnter,
+                            onMouseLeave: e.onMouseLeave,
+                            onClick: this.props.onClick,
+                            children: React.createElement("path", {
+                               d: "m10,0.564842c-5.17133,0 -9.370144,4.228447 -9.370144,9.435503s4.198814,9.435158 9.370144,9.435158c5.170987,0 9.370144,-4.228102 9.370144,-9.435503c0,-5.207056 -4.199157,-9.435503 -9.370144,-9.435503l0,0.000345zm0,2.059599c0.454389,0 0.834417,0.160939 1.156533,0.485095c0.322116,0.324363 0.481803,0.712218 0.481803,1.175642c0,0.480678 -0.159687,0.889237 -0.481803,1.207733s-0.702144,0.474467 -1.156533,0.474467c-0.448563,0 -0.834417,-0.161146 -1.156533,-0.485164c-0.322116,-0.324363 -0.492769,-0.728091 -0.492769,-1.197036c0,-0.451692 0.170653,-0.834716 0.492769,-1.1646c0.322116,-0.330229 0.707969,-0.496137 1.156533,-0.496137zm0,4.99277c0.408128,0 0.731957,0.142513 0.985195,0.420636c0.258721,0.272258 0.385511,0.613183 0.385511,1.024158l0,6.869242c0,0.410974 -0.12679,0.75121 -0.385511,1.0352c-0.253238,0.277779 -0.577067,0.420636 -0.985195,0.420636c-0.402645,0 -0.737097,-0.142858 -0.995818,-0.420636c-0.253238,-0.28399 -0.385854,-0.624226 -0.385854,-1.0352l0,-6.869242c0,-0.410974 0.132616,-0.7519 0.385854,-1.024158c0.258721,-0.278124 0.593173,-0.420636 0.995818,-0.420636z",
+                               fill: "currentColor",
+                               fillRule: "evenodd",
+                               clipRule: "evenodd",
+                })
+            }))))
         }
+    }
 
-        createButton(gear) {
-            if (gear == true) {
-            var button = `<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><g><rect fill="none" id="canvas_background" height="22" width="22" y="-1" x="-1"/></g><g><path stroke="" fill-rule="evenodd" fill="currentColor" d="m10,0.564842c-5.17133,0 -9.370144,4.228447 -9.370144,9.435503s4.198814,9.435158 9.370144,9.435158c5.170987,0 9.370144,-4.228102 9.370144,-9.435503c0,-5.207056 -4.199157,-9.435503 -9.370144,-9.435503l0,0.000345zm0,2.059599c0.454389,0 0.834417,0.160939 1.156533,0.485095c0.322116,0.324363 0.481803,0.712218 0.481803,1.175642c0,0.480678 -0.159687,0.889237 -0.481803,1.207733s-0.702144,0.474467 -1.156533,0.474467c-0.448563,0 -0.834417,-0.161146 -1.156533,-0.485164c-0.322116,-0.324363 -0.492769,-0.728091 -0.492769,-1.197036c0,-0.451692 0.170653,-0.834716 0.492769,-1.1646c0.322116,-0.330229 0.707969,-0.496137 1.156533,-0.496137zm0,4.99277c0.408128,0 0.731957,0.142513 0.985195,0.420636c0.258721,0.272258 0.385511,0.613183 0.385511,1.024158l0,6.869242c0,0.410974 -0.12679,0.75121 -0.385511,1.0352c-0.253238,0.277779 -0.577067,0.420636 -0.985195,0.420636c-0.402645,0 -0.737097,-0.142858 -0.995818,-0.420636c-0.253238,-0.28399 -0.385854,-0.624226 -0.385854,-1.0352l0,-6.869242c0,-0.410974 0.132616,-0.7519 0.385854,-1.024158c0.258721,-0.278124 0.593173,-0.420636 0.995818,-0.420636z" id="path838"/></g></svg>`
+    class InfoButton {
+        constructor() {}
 
-            // Use flexMarginReset prop to find the selector for the taskbar row.
-            const selector = (BdApi.findModuleByProps('flexMarginReset', 'flex').flex || '').split(' ')[0];
-            if (!selector) {
-              console.error('Info Button failed to start up: Selector not found?');
-              return;
-            }
-        
-            // Create my custom button and prepend it to the toolbar row.
-            const row = document.querySelector(`.${selector}`);
-            this.btnReference = row.firstElementChild.cloneNode(true);
-            this.btnReference.firstElementChild.innerHTML = button;
-            this.btnReference.firstElementChild.style.pointerEvents = 'none'; // Ignore pointer events to fix bug that was causing repeated clicks to be ignored.
-            this.btnReference.setAttribute('aria-label', 'Print info to console');
-            this.btnReference.id = 'RDTBtn';
-            this.btnReference.addEventListener('mouseenter', this.onButtonMouseOver);
-            this.btnReference.addEventListener('mouseleave', this.onButtonMouseOut);
+        async patchButton(ran) {
+            this.settings = ran.settings
+            this.c = ran.c
 
-            row.prepend(this.btnReference);
+            if (this.settings.gear == true) {
+            const account = await ReactComponents.getComponentByName("Account", DiscordSelectors.AccountDetails.container);
 
-            this.createTooltip()
+            Patcher.after(account.component.prototype, "render", ({props}, _, react)=>{
+                react.props.children[2].props.children.unshift(
+                    React.createElement(InfoIcon, {
+                            role: "switch",
+                            onClick: () => this.onClick()
+                    })
+                );
+            });
             }
             else {
-                this.destructor()
+                Patcher.unpatchAll();
             }
         }
 
-        createTooltip() {
-            // Also setup my recreated tooltip that uses Discord's classes.
-            const tooltipClasses = BdApi.findModuleByProps('tooltipBottom');
-        
-            const wrapperDiv = document.createElement('div');
-            wrapperDiv.style.visibility = 'hidden';
-            wrapperDiv.style.position = 'absolute';
-            wrapperDiv.style.zIndex = '10000';
-            wrapperDiv.style.pointerEvents = 'none';
-            this.tooltipReference = wrapperDiv;
-        
-            const textWrapper = document.createElement('div');
-            textWrapper.className = [tooltipClasses.tooltip, tooltipClasses.tooltipTop, tooltipClasses.tooltipBlack].join(' ');
-            textWrapper.innerText = `Print info to console`;
-        
-            const bottomArrow = document.createElement('div');
-            bottomArrow.className = tooltipClasses.tooltipPointer;
-        
-            textWrapper.prepend(bottomArrow);
-            wrapperDiv.appendChild(textWrapper);
-            document.body.appendChild(wrapperDiv);
+        onClick() {
+            if (this.settings.switchserverid == false) {
+                var server = this.c.getServerById(this.settings.dropserverid);
+            }
+            else {
+                var server = this.c.getServerById(this.settings.textserverid);
+            }
+
+            if (this.settings.switchchannelid == false) {
+                var channel = this.c.getChannelById(this.settings.dropchannelid);
+            }
+            else {
+                var channel = this.c.getChannelById(this.settings.textchannelid);
+            }
+
+            if (this.settings.switchuserid == false) {
+                var user = this.c.getUserById(this.settings.dropuserid);
+            }
+            else {
+                var user = this.c.getUserById(this.settings.textuserid)
+            }
+
+            this.c.FL.log(server, channel, user);
         }
-
-        onButtonMouseOver({target}) {
-
-            const { x, y } = target.getBoundingClientRect();
-            const tooltipXPos = x + target.clientWidth / 2 - this.tooltipReference.offsetWidth / 2;
-            const tooltipYPos = y - target.clientHeight - 8; // 8 being a constant amount of space to hover above the btn.
-        
-            this.tooltipReference.style.left = `${tooltipXPos}px`;
-            this.tooltipReference.style.visibility = 'visible';
-            this.tooltipReference.style.top = `${tooltipYPos}px`;
-        
-            this.tooltipReference.visibility = 'visible';
         }
-
-        onButtonMouseOut() {
-            this.tooltipReference.style.visibility = 'hidden';
-        }
-
-    }
 
     return class RandomDiscordTools extends Plugin {
         constructor() {
@@ -290,7 +286,7 @@ let RandomDiscordTools = (() => {
                 getUserById    : BdApi.findModuleByProps("getUser").getUser,
                 userId         : BdApi.findModuleByProps('getId').getId(),
                 FL             : new FireLog(),
-                IB             : new InfoButton(),
+                PB             : new InfoButton(),
             }
 
             this.defaultSettings = {
@@ -321,35 +317,15 @@ let RandomDiscordTools = (() => {
                 //console.log(document.querySelectorAll(".root-1gCeng"))
             }
 
-
-            if (this.settings.gear == true) {
-                if (target.id == "RDTBtn") {
-
-                    if (this.settings.switchserverid == false) {
-                        var server = this.c.getServerById(this.settings.dropserverid);
-                    }
-                    else {
-                        var server = this.c.getServerById(this.settings.textserverid);
-                    }
-
-                    if (this.settings.switchchannelid == false) {
-                        var channel = this.c.getChannelById(this.settings.dropchannelid);
-                    }
-                    else {
-                        var channel = this.c.getChannelById(this.settings.textchannelid);
-                    }
-
-                    if (this.settings.switchuserid == false) {
-                        var user = this.c.getUserById(this.settings.dropuserid);
-                    }
-                    else {
-                        var user = this.c.getUserById(this.settings.textuserid)
-                    }
-
-                    FL.log(server, channel, user);
-                }
+            if (target.classList.contains("bd-addon-header")) {
+                const currentDir = BdApi.Plugins.folder;
+                let addon = target.parentNode.__reactInternalInstance$.return.stateNode.props.addon
+                let fileDir = require("path").resolve(`${currentDir}/${addon.filename}`)
+                console.log("Opening " + addon.filename)
+                require("electron").shell.openItem(fileDir);
             }
-            else {
+
+            if (this.settings.gear == false) {
                 if (target.classList.contains("wrapper-1BJsBx")) {
                     let server = this.c.getServerById(this.c.currentGuildId());
                     FL.log(server, 0, 0)
@@ -361,19 +337,10 @@ let RandomDiscordTools = (() => {
                 }
 
                 if (target.classList.contains("wrapper-3t9DeA")) {
-                   if (e.target.classList.contains("avatar-SmRMf2")) return;
+                   if (target.classList.contains("avatar-SmRMf2")) return;
                    let userid = target.attributes.user_by_bdfdb.value
                    FL.log(0, 0, this.c.getUserById(userid))
                 }
-
-                if (target.classList.contains("bd-addon-header")) {
-                    const currentDir = BdApi.Plugins.folder;
-                    let addon = target.parentNode.__reactInternalInstance$.return.stateNode.props.addon
-                    let fileDir = require("path").resolve(`${currentDir}/${addon.filename}`)
-                    console.log("Opening " + addon.filename)
-                    require("electron").shell.openItem(fileDir);
-                }
-
             }
         }
         
@@ -415,10 +382,10 @@ let RandomDiscordTools = (() => {
             return "";
           }
 
-        onStart() {
-            document.addEventListener("click", this.listener = e => {this.onClick(e)});
+        async onStart() {
 
-            this.c.IB.createButton(this.settings.gear)
+            document.addEventListener("click", this.listener = e => {this.onClick(e)});
+            this.c.PB.patchButton(this)
 
             //console.log(document.cookie)
 
@@ -456,8 +423,8 @@ let RandomDiscordTools = (() => {
 
         onStop() {
             document.removeEventListener("click", this.listener);
-            
-            this.c.IB.destructor();
+        
+            Patcher.unpatchAll();
         }
 
         getSettingsPanel() {
@@ -467,7 +434,7 @@ let RandomDiscordTools = (() => {
                 // Server
             new SettingField("", "", () => {}, DisplayChangelog, {col: col.GREY}),
 
-            new Switch("Automatic or Manual Selection", "OFF = Automatic, ON = Manual", this.settings.gear, (e) => {this.settings.gear = e; this.c.IB.createButton(this.settings.gear)}),
+            new Switch("Automatic or Manual Selection", "OFF = Automatic, ON = Manual", this.settings.gear, (e) => {this.settings.gear = e; this.c.PB.patchButton(this)}),
             
             new Textbox("Server", "Put in the id of the server you want to get information about.", this.settings.textserverid, (e) => {this.settings.textserverid = e;}),
             new Dropdown("Server", "Select the id of the server you want to get information about.", this.settings.dropserverid, [

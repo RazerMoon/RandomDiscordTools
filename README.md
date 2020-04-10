@@ -36,7 +36,7 @@ The plugin can get the details of a server and print them into the console using
 
 or
 
-* **[Manual Server Selection](#Manual-Server-Selection)** - Enter the ID of the server manually into the plugin settings and click on any message header.
+* **[Manual Server Selection](#Manual-Server-Selection)** - Enter the ID of the server manually into the plugin settings and click on a button.
 
 The method can be selected in the plugin settings but is set to [Automatic Server Selection](#Automatic-Server-Selection) by default.
 
@@ -66,7 +66,7 @@ The plugin can get the details of a channel and print them into the console usin
 
 or
 
-* **[Manual Channel Selection](#Manual-Channel-Selection)** - Enter the ID of the channel manually into the plugin settings and click on any message header.
+* **[Manual Channel Selection](#Manual-Channel-Selection)** - Enter the ID of the channel manually into the plugin settings and click on a button.
 
 The method can be selected in the plugin settings but is set to [Automatic Server Selection](#Automatic-Channel-Selection) by default.
 
@@ -96,7 +96,7 @@ The plugin can get the details of a user and print them into the console using o
 
 or
 
-* **[Manual User Selection](#Manual-User-Selection)** - Enter the ID of the user manually into the plugin settings and click on any message header.
+* **[Manual User Selection](#Manual-User-Selection)** - Enter the ID of the user manually into the plugin settings and click on a button.
 
 The method can be selected in the plugin settings but is set to [Automatic User Selection](#Automatic-User-Selection) by default.
 
@@ -195,6 +195,5 @@ or
   or
 
   * **ON = Manual** - Use the ID from the textbox.
-
 
 ---
