@@ -1,6 +1,10 @@
 /**
  * @name RandomDiscordTools
  * @authorId 162970149857656832
+ * @version 0.7.0
+ * @website https://razermoon.github.io/
+ * @invite TuAmzRb
+ * @source https://github.com/RazerMoon/RandomDiscordTools
  */
 /*@cc_on
 @if (@_jscript)
@@ -81,10 +85,13 @@ let RandomDiscordTools = (() => {
         stop() {}
     } : (([Plugin, Api]) => {
         const plugin = (Plugin, Api) => {
-    const {Modals, DiscordModules, Settings, WebpackModules, ReactComponents, Patcher, DiscordSelectors, PluginUtilities} = Api;
+    const {Modals, DiscordModules, Settings, WebpackModules, ReactComponents, Patcher, DiscordSelectors} = Api;
     const {SettingPanel, SettingField, Textbox, Dropdown, Switch} = Settings;
     const {React} = DiscordModules;
 
+    /**
+     * Prints details into console.
+     */
     class FireLog {
         constructor(server, channel) {
             this.css = {
@@ -94,6 +101,12 @@ let RandomDiscordTools = (() => {
             this.owner = (e) => {let l = BdApi.findModuleByProps("getUser").getUser(e); if (typeof l != 'undefined') return l.tag; else return "error"};
         }
 
+        /**
+         * Prints details about server, channel or user into console with style.
+         * @param {object} server The server object
+         * @param {object} channel The channel object
+         * @param {object} user The user Object
+         */
         log(server, channel, user) {
 
             console.groupCollapsed('%cRandomDiscordTools 🔥', this.css.group);
@@ -172,6 +185,9 @@ let RandomDiscordTools = (() => {
 
     };
 
+    /**
+     * Creates a Changelog button React Component.
+     */
     class DisplayChangelog extends React.Component {
         constructor() {
             super();
@@ -189,6 +205,9 @@ let RandomDiscordTools = (() => {
     }
     };
 
+    /**
+     * Creates the InfoButton as a React Component that can be patched into Discord without DOM manipulation.
+     */
     class InfoIcon extends React.Component {
         constructor() {
             super()
@@ -224,9 +243,16 @@ let RandomDiscordTools = (() => {
         }
     }
 
+    /**
+     * Takes the InfoIcon component and patches it into the AccountDetails container, also displays information when the button is pressed.
+     */
     class InfoButton {
         constructor() {}
 
+        /**
+         * Patches AccountDetails
+         * @param {object} ran The plugin
+         */
         async patchButton(ran) {
             this.settings = ran.settings
             this.c = ran.c
@@ -248,6 +274,9 @@ let RandomDiscordTools = (() => {
             }
         }
 
+        /**
+         * Displays stuff based on what you entered into the settings.
+         */
         onClick() {
             if (this.settings.switchserverid == false) {
                 var server = this.c.getServerById(this.settings.dropserverid);
@@ -271,13 +300,20 @@ let RandomDiscordTools = (() => {
             }
 
             this.c.FL.log(server, channel, user);
+            BdApi.findModuleByProps('playSound').playSound('ptt_start')
         }
         }
 
+    /**
+     * Class with the main plugin stuff.
+     */
     return class RandomDiscordTools extends Plugin {
         constructor() {
             super();
 
+            /**
+             * Useful commands.
+             */
             this.c = {
                 currentChannel : BdApi.findModuleByProps('getChannelId').getChannelId,
                 currentGuildId : BdApi.findModuleByProps('getGuildId').getGuildId,
@@ -289,6 +325,9 @@ let RandomDiscordTools = (() => {
                 PB             : new InfoButton(),
             }
 
+            /**
+             * Default settings of the plugin.
+             */
             this.defaultSettings = {
                 textserverid   : "",
                 textserverid   : "",
@@ -302,26 +341,23 @@ let RandomDiscordTools = (() => {
             };
         }
 
+        /**
+         * Accepts a MouseEvent from an EventListener and does stuff depending on what it is.
+         * @param {MouseEvent} param0 MouseEvent from EventListener.
+         */
         onClick({target}) {
 
             let FL = this.c.FL;
 
             if (target.id == "F_ChangelogButton") {
                 Modals.showChangelogModal(`${this._config.info.name} has been updated!`, this.getVersion(), this._config.changelog);
-                //let window = document.querySelectorAll(".root-1gCeng")[0]
-                //let old = document.querySelectorAll(".scrollerWrap-2lJEkd")[7]
-                //let news = document.createElement("img")
-                //news.setAttribute("src", "https://www.goodfoodireland.ie/sites/default/files/styles/provider_photo_large/public/places/photos/1404/galway%20goat%20farm%202_0.jpg?itok=iOabX7PS")
-                //news.setAttribute("height", "300")
-                //window.insertBefore(news, old)
-                //console.log(document.querySelectorAll(".root-1gCeng"))
             }
 
             if (target.classList.contains("bd-addon-header")) {
                 const currentDir = BdApi.Plugins.folder;
-                let addon = target.parentNode.__reactInternalInstance$.return.stateNode.props.addon
-                let fileDir = require("path").resolve(`${currentDir}/${addon.filename}`)
-                console.log("Opening " + addon.filename)
+                let filename = target.parentNode.__reactInternalInstance$.return.stateNode.props.addon.filename
+                let fileDir = require("path").resolve(`${currentDir}/${filename}`)
+                console.log("Opening " + filename)
                 require("electron").shell.openItem(fileDir);
             }
 
@@ -344,6 +380,11 @@ let RandomDiscordTools = (() => {
             }
         }
         
+        /**
+         * Displays an alert.
+         * @param {string} e Title of alert.
+         * @param {string} t Body of alert.
+         */
         displayAlert(e, t) {
             let n = BdApi.findModuleByProps("push", "update", "pop", "popWithKey");
             let s = BdApi.findModuleByPrototypes("handleCancel", "handleSubmit", "handleMinorConfirm");
@@ -366,6 +407,10 @@ let RandomDiscordTools = (() => {
             
         }
 
+        /**
+         * Finds the value of a cookie by its name.
+         * @param {string} cname Name of cookie.
+         */
         getCookie(cname) {
             var name = cname + "=";
             var decodedCookie = decodeURIComponent(document.cookie);
@@ -382,51 +427,27 @@ let RandomDiscordTools = (() => {
             return "";
           }
 
+        /**
+         * Runs when the plugin is started.
+         */
         async onStart() {
 
             document.addEventListener("click", this.listener = e => {this.onClick(e)});
             this.c.PB.patchButton(this)
-
-            //console.log(document.cookie)
-
-            //console.log(this.getCookie("names"))
-
-            //document.cookie = "names=Slim Shas; expires=Thu, 20 Dec 2020 12:00:00 UTC; path=/";
-
-            //console.log(BdApi.alert)
-
-            //this.displayAlert("Hello", "bu")
-            //console.log(exec)
-
-            //this.run('start "" "c:\\" ')
-
-            //console.log(DiscordModules.ConfirmationModal)
-
-            //console.log(DiscordClasses.Changelog)
-            //console.log(ModalStack)
-
-            //console.log(DiscordModules.ButtonData)
-            //console.log(DiscordClassModules.Changelog)
-
-            //Modals.showChangelogModal(`${this._config.info.name} has been updated!`, this.getVersion(), this._config.changelog);
-
-            //console.log(BdApi.showConfirmationModal())
-
-            //console.log(ReactComponents.getComponentByName("Emoji"))
-
-            //const server = this.c.getServerById("351081433948880896");
-            //console.log(BdApi.findAllModules((e) => {return e._isInitialized}))
-
-            //console.log(DiscordModules.UserProfileModals.open("220905833431695361"));
-            //React.createElement("a", {href: "https://google.com/", target: "_blank"}, "This is a link")
         }
 
+        /**
+         * Runs when the plugin is stopped.
+         */
         onStop() {
             document.removeEventListener("click", this.listener);
         
             Patcher.unpatchAll();
         }
 
+        /**
+         * Runs when the user clicks on the plugin settings button
+         */
         getSettingsPanel() {
             let col = DiscordModules.ButtonData.ButtonColors;
             return SettingPanel.build(this.saveSettings.bind(this),
